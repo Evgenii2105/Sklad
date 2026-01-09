@@ -24,6 +24,8 @@ class WarehouseListViewController: UIViewController {
     
     // MARK: Private Properties
     
+    private let searchController: UISearchController
+    
     private lazy var warehouseCollection: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
     
@@ -45,11 +47,22 @@ class WarehouseListViewController: UIViewController {
     
     // MARK: Lifecycle
     
+    init() {
+        let resultController = SearchResultsViewController()
+        self.searchController = UISearchController(searchResultsController: resultController)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = . black
         setupUI()
         setupConstraints()
+        setupSearchController()
        // presenter?.setupDataSource()
     }
 }
@@ -75,6 +88,15 @@ extension WarehouseListViewController: UICollectionViewDelegate, UICollectionVie
     }
 }
 
+// MARK: - Extension UISearchResultsUpdating
+
+extension WarehouseListViewController: UISearchResultsUpdating {
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        print("поиск")
+    }
+}
+
 // MARK: - SkladViewController
 
 private extension WarehouseListViewController {
@@ -90,5 +112,18 @@ private extension WarehouseListViewController {
     
     func setupUI() {
         view.addSubview(warehouseCollection)
+    }
+    
+    func setupSearchController() {
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.searchBar.placeholder = "Search"
+        searchController.searchBar.tintColor = .lightGray
+        
+        definesPresentationContext = true
+        searchController.modalPresentationStyle = .fullScreen
+        searchController.modalTransitionStyle = .coverVertical
+        self.navigationItem.searchController = searchController
+        self.navigationItem.hidesSearchBarWhenScrolling = false
     }
 }
