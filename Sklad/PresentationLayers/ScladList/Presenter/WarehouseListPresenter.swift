@@ -7,4 +7,6 @@
 
 protocol WarehouseListPresenter: AnyObject {
     func setupDataSource()
+    func openAddedNewBoxScreen()
+    func showDetails(item: WarehouseModel)
 }

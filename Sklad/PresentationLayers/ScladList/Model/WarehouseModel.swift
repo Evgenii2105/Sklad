@@ -9,4 +9,5 @@ import Foundation
 
 struct WarehouseModel {
     let name: String
+    let itemsCount: String
 }
