@@ -9,5 +9,5 @@ import Foundation
 
 protocol WarehouseView: AnyObject {
     func openScreenAddedBox()
-    func showDetails(item: WarehouseModel)
+    func getListWarehouse(data provider: [WarehouseList.SectionData])
 }

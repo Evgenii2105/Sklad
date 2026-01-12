@@ -14,12 +14,9 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
         window = UIWindow(windowScene: windowScene)
-        let warehouseView = WarehouseListViewController()
-        let presenter = WarehouseListPresenterImpl()
-        warehouseView.presenter = presenter
-        presenter.view = warehouseView
+        let skladViewController = SkladListBuilder.build()
         
-        window?.rootViewController = UINavigationController(rootViewController: warehouseView)
+        window?.rootViewController = UINavigationController(rootViewController: skladViewController)
         window?.makeKeyAndVisible()
     }
 

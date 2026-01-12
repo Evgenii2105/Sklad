@@ -8,5 +8,7 @@
 import Foundation
 
 protocol ItemDetailsPresenter: AnyObject {
-    
+    func decreaseCount()
+    func additionCount()
+    func addedNewItemAction()
 }

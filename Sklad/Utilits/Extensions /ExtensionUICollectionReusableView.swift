@@ -7,7 +7,7 @@
 
 import UIKit
 
-// MARK: - Extension UICollectionReusableView 
+// MARK: - Extension UICollectionReusableView
 
 extension UICollectionReusableView {
     static var reuseIdentifier: String {

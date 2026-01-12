@@ -8,40 +8,44 @@
 import UIKit
 
 class WarehouseListViewController: UIViewController {
-    
+   
     // MARK: Internal Properties
     
     var presenter: WarehouseListPresenter?
     
-    var model: [WarehouseModel] = [
-        WarehouseModel(name: "Водка", itemsCount: "16"),
-        WarehouseModel(name: "Пива", itemsCount: "16"),
-        WarehouseModel(name: "Шапманское", itemsCount: "16"),
-        WarehouseModel(name: "Вино", itemsCount: "16"),
-        WarehouseModel(name: "Ром", itemsCount: "16"),
-        WarehouseModel(name: "6", itemsCount: "16"),
-        WarehouseModel(name: "7", itemsCount: "16")
-    ]
+    typealias DataSource = UICollectionViewDiffableDataSource<WarehouseList.Section, WarehouseList.WarehouseModel>
+    typealias SnapShot = NSDiffableDataSourceSnapshot<WarehouseList.Section, WarehouseList.WarehouseModel>
     
     // MARK: Private Properties
     
     private let searchController: UISearchController
     
-    private lazy var warehouseCollection: UICollectionView = {
-        let layout = UICollectionViewFlowLayout()
+    private lazy var dataSource: DataSource = {
+        let data = DataSource(
+            collectionView: warehouseCollection
+        ) { collectionView, indexPath, itemIdentifier in
+            guard let cell = collectionView.dequeueReusableCell(
+                withReuseIdentifier: WarehouseListCell.reuseIdentifier,
+                for: indexPath
+            ) as? WarehouseListCell else {
+                return UICollectionViewCell()
+            }
+            cell.configure(item: itemIdentifier)
+            return cell
+        }
+        return data
+    }()
     
-        layout.scrollDirection = .vertical
-        layout.estimatedItemSize = CGSize(width: 370, height: 100)
+    private lazy var warehouseCollection: UICollectionView = {
         let collection = UICollectionView(
             frame: .zero,
-            collectionViewLayout: layout
+            collectionViewLayout: UICollectionViewLayout()
         )
         collection.register(
             WarehouseListCell.self,
             forCellWithReuseIdentifier: WarehouseListCell.reuseIdentifier
         )
-        collection.backgroundColor = Colors.backgroundCollection
-        collection.dataSource = self
+        
         collection.delegate = self
         return collection
     }()
@@ -52,7 +56,7 @@ class WarehouseListViewController: UIViewController {
         button.setImage(image, for: .normal)
         button.tintColor = .lightGray
         button.backgroundColor = Colors.addedNewBoxButtonBackground
-        button.layer.cornerRadius = 32
+        button.layer.cornerRadius = 30
         button.addTarget(
             self,
             action: #selector(addedNewItem),
@@ -75,69 +79,45 @@ class WarehouseListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = . black
-        setupNavigationBar() 
+        setupNavigationBar()
         setupUI()
         setupConstraints()
         setupSearchController()
-       // presenter?.setupDataSource()
+        presenter?.setupDataSource()
     }
 }
 
 // MARK: - UICollectionViewDelegate, UICollectionViewDataSource
 
-extension WarehouseListViewController: UICollectionViewDelegate, UICollectionViewDataSource {
-    
-    func collectionView(
-        _ collectionView: UICollectionView,
-        numberOfItemsInSection section: Int
-    ) -> Int {
-        model.count
-    }
-    
-    func collectionView(
-        _ collectionView: UICollectionView,
-        cellForItemAt indexPath: IndexPath
-    ) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(
-            withReuseIdentifier: WarehouseListCell.reuseIdentifier,
-            for: indexPath
-        ) as? WarehouseListCell else {
-            return UICollectionViewCell()
-        }
-        let item = model[indexPath.item]
-        cell.configure(item: item)
-        return cell
-    }
+extension WarehouseListViewController: UICollectionViewDelegate {
     
     func collectionView(
         _ collectionView: UICollectionView,
         didSelectItemAt indexPath: IndexPath
     ) {
-        let item = model[indexPath.item]
+        guard let item = dataSource.itemIdentifier(for: indexPath) else { return }
         presenter?.showDetails(item: item)
     }
+    
+   
 }
 
 // MARK: - Extension WarehouseView
 
 extension WarehouseListViewController: WarehouseView {
     
+    func getListWarehouse(data provider: [WarehouseList.SectionData]) {
+        let newLayout = makeLayout(with: provider)
+        warehouseCollection.setCollectionViewLayout(newLayout, animated: true)
+        applySnapShot(section: provider)
+    }
+
     func openScreenAddedBox() {
         let view = ScreenAddedBoxViewController()
         let presenter = ScreenAddedBoxPresenterImpl()
         view.presenter = presenter
         presenter.view = view
-        
-        navigationController?.pushViewController(view, animated: true)
-    }
-    
-    func showDetails(item: WarehouseModel) {
-        let view = ItemDetailsViewController()
-        let presenter = ItemDetailsPresenterImpl()
-        
-        view.presenter = presenter
-        presenter.view = view
+        presenter.delegate = self
         
         navigationController?.pushViewController(view, animated: true)
     }
@@ -149,6 +129,15 @@ extension WarehouseListViewController: UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
         print("поиск")
+    }
+}
+
+// MARK: - GetNewBox
+
+extension WarehouseListViewController: GetNewBoxDelegate {
+    
+    func getNewBox(item: WarehouseList.WarehouseModel) {
+        presenter?.addedNewItem(item: item)
     }
 }
 
@@ -165,7 +154,7 @@ private extension WarehouseListViewController {
         ])
         
         addedItemButton.addConstraints(constraints: [
-            addedItemButton.bottomAnchor.constraint(equalTo: warehouseCollection.bottomAnchor, constant: -90),
+            addedItemButton.bottomAnchor.constraint(equalTo: warehouseCollection.bottomAnchor, constant: -110),
             addedItemButton.trailingAnchor.constraint(equalTo: warehouseCollection.trailingAnchor, constant: -16),
             addedItemButton.widthAnchor.constraint(equalToConstant: 60),
             addedItemButton.heightAnchor.constraint(equalToConstant: 60)
@@ -181,7 +170,19 @@ private extension WarehouseListViewController {
         navigationItem.titleView = title
     }
     
+    func applySnapShot(section: [WarehouseList.SectionData]) {
+        var snapShot = SnapShot()
+        for sectionData in section {
+            if !sectionData.data.isEmpty {
+                 snapShot.appendSections([sectionData.section])
+                snapShot.appendItems(sectionData.data, toSection: sectionData.section)
+            }
+        }
+        dataSource.apply(snapShot, animatingDifferences: true)
+    }
+    
     func setupUI() {
+        view.backgroundColor = Colors.backgroundCollection
         view.addSubview(warehouseCollection)
         view.addSubview(addedItemButton)
     }
@@ -202,5 +203,43 @@ private extension WarehouseListViewController {
     @objc
     func addedNewItem() {
         presenter?.openAddedNewBoxScreen()
+    }
+    
+    func makeLayout(
+        with provider: [WarehouseList.SectionData]
+    ) -> UICollectionViewCompositionalLayout {
+        let layout = UICollectionViewCompositionalLayout { sectionIndex, environment in
+            var config = UICollectionLayoutListConfiguration(appearance: .plain)
+            config.backgroundColor = Colors.backgroundCollection
+            
+            config.trailingSwipeActionsConfigurationProvider = { [weak self] indexPath in
+                guard let self else { return nil }
+                
+                let deleteAction = UIContextualAction(
+                    style: .destructive,
+                    title: ""
+                ) { action, sourceView, actionPerformed in
+                    self.presenter?.deleteItem(item: indexPath)
+                        actionPerformed(true)
+                    }
+                deleteAction.backgroundColor = .red
+                deleteAction.image = UIImage(systemName: "trash")
+                
+                return UISwipeActionsConfiguration(actions: [deleteAction])
+            }
+            let section = NSCollectionLayoutSection.list(
+                using: config,
+                layoutEnvironment: environment
+            )
+            section.interGroupSpacing = 8
+            section.contentInsets = NSDirectionalEdgeInsets(
+                top: 8,
+                leading: 8,
+                bottom: 15,
+                trailing: 8
+            )
+            return section
+        }
+        return layout
     }
 }

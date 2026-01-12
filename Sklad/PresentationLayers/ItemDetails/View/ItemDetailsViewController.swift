@@ -64,6 +64,21 @@ final class ItemDetailsViewController: UIViewController {
         return collection
     }()
     
+    private lazy var addedItemButton: UIButton = {
+        let button = UIButton()
+        let image = UIImage(systemName: "plus")
+        button.setImage(image, for: .normal)
+        button.tintColor = .lightGray
+        button.backgroundColor = Colors.addedNewBoxButtonBackground
+        button.layer.cornerRadius = 30
+        button.addTarget(
+            self,
+            action: #selector(addedNewItem),
+            for: .touchUpInside
+        )
+        return button
+    }()
+    
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         let resultController = SearchResultsViewController()
         self.searchController = UISearchController(searchResultsController: resultController)
@@ -78,7 +93,7 @@ final class ItemDetailsViewController: UIViewController {
         super.viewDidLoad()
         setupUI()
         setupSearchController()
-        // setupConstraints()
+        setupConstraints()
     }
 }
 
@@ -111,6 +126,7 @@ extension ItemDetailsViewController: UICollectionViewDelegate, UICollectionViewD
         }
         
         let item = model[indexPath.item]
+        cell.delegate = self
         cell.configure(item: item)
         return cell
     }
@@ -122,12 +138,37 @@ extension ItemDetailsViewController: ItemDetailsView {
     
 }
 
+// MARK: - Extension ChangeCounterDelegate
+
+extension ItemDetailsViewController: ChangeCounterDelegate {
+    
+    func decreaseCount() {
+        presenter?.decreaseCount()
+    }
+    
+    func additionCount() {
+        presenter?.additionCount()
+    }
+}
+
 // MARK: - Private Extension ItemDetailsViewController
 
 private extension ItemDetailsViewController {
     
     func setupUI() {
         view.addSubview(itemDetailsCollection)
+        view.addSubview(addedItemButton)
+    }
+    
+    func setupConstraints() {
+        addedItemButton.addConstraints(
+            constraints: [
+                addedItemButton.bottomAnchor.constraint(equalTo: itemDetailsCollection.bottomAnchor, constant: -110),
+                addedItemButton.trailingAnchor.constraint(equalTo: itemDetailsCollection.trailingAnchor, constant: -16),
+                addedItemButton.widthAnchor.constraint(equalToConstant: 60),
+                addedItemButton.heightAnchor.constraint(equalToConstant: 60)
+            ]
+        )
     }
     
     func setupSearchController() {
@@ -141,5 +182,10 @@ private extension ItemDetailsViewController {
         searchController.modalPresentationStyle = .fullScreen
         self.navigationItem.searchController = searchController
         self.navigationItem.hidesSearchBarWhenScrolling = false
+    }
+    
+    @objc
+    func addedNewItem() {
+        presenter?.addedNewItemAction()
     }
 }

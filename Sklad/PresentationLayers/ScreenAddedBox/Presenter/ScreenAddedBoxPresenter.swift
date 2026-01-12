@@ -8,5 +8,5 @@
 import Foundation
 
 protocol ScreenAddedBoxPresenter: AnyObject {
-    
+    func addNewItem(item: WarehouseList.WarehouseModel)
 }

@@ -41,8 +41,8 @@ final class WarehouseListCell: UICollectionViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    func configure(item: WarehouseModel) {
-        nameLabel.text = item.name
+    func configure(item: WarehouseList.WarehouseModel) {
+        nameLabel.text = "\(item.name)"
         itemsCountLabel.text = "\(item.itemsCount) items"
     }
 }
@@ -67,6 +67,7 @@ private extension WarehouseListCell {
         ])
         
         itemsCountLabel.addConstraints(constraints: [
+            itemsCountLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 16),
             itemsCountLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
             itemsCountLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -16)
         ])

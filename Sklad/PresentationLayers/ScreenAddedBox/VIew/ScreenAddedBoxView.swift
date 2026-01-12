@@ -8,5 +8,5 @@
 import UIKit
 
 protocol ScreenAddedBoxView: AnyObject {
-    
+    func openWarehouseListScreen()
 }
