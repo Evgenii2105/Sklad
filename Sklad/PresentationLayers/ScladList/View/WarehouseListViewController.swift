@@ -87,7 +87,7 @@ class WarehouseListViewController: UIViewController {
     }
 }
 
-// MARK: - UICollectionViewDelegate, UICollectionViewDataSource
+// MARK: - UICollectionViewDelegate
 
 extension WarehouseListViewController: UICollectionViewDelegate {
     

@@ -17,7 +17,8 @@ final class ItemDetailsRouterImpl: ItemDetailsRouter {
     
     func addedNewItemScreen() {
         let view = AddedItemViewController()
-        let presenter = AddedItemPresenterImpl()
+        let itemStorage = ItemStorageImpl()
+        let presenter = AddedItemPresenterImpl(itemStorage: itemStorage)
         
         
         view.presenter = presenter

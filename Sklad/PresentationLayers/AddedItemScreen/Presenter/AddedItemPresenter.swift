@@ -8,5 +8,7 @@
 import Foundation
 
 protocol AddedItemPresenter: AnyObject {
-    
+    func setupDataSource()
+   // func saveItem(name: String, remainder: String, price: String)
+    func saveTextWithItem(addedItem: AddedItemList.AddedItemModel)
 }
